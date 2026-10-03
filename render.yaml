@@ -2,14 +2,7 @@ services:
   - type: web
     name: service-entry-app
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
-    healthCheckPath: /
-    envVars:
-      - key: DATA_DIR
-        value: /var/data
-    disk:
-      name: service-entry-data
-      mountPath: /var/data
-      sizeGB: 1
+    healthCheckPath: /health
