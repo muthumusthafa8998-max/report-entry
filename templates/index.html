@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Service Entry</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#222;font-family:Arial,sans-serif}
+.app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
+header{background:#295294;color:#fff;padding:20px 18px;position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:22px}header p{margin:5px 0 0;font-size:13px;opacity:.9}
+main{padding:18px}.field{margin-bottom:15px}label{display:block;font-size:14px;font-weight:700;margin-bottom:7px}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:13px;border:1px solid #ccd5e2;border-radius:10px;background:#fff}
+textarea{min-height:80px;resize:vertical}.status{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.status button{padding:14px;border:2px solid #ddd;border-radius:10px;background:#fff;font-weight:700;font-size:15px}
+.complete.active{background:#c6efce;border-color:#2e9b4b;color:#176b2d}
+.pending.active{background:#ffc7ce;border-color:#d33b4a;color:#9c0006}
+.actions{display:grid;gap:10px;margin-top:20px}.save{border:0;border-radius:11px;background:#295294;color:#fff;padding:15px;font-size:17px;font-weight:700}
+.download{border:2px solid #295294;border-radius:11px;background:#fff;color:#295294;padding:14px;font-weight:700;font-size:15px}.clear{border:2px solid #d33b4a;border-radius:11px;background:#fff;color:#9c0006;padding:14px;font-weight:700;font-size:15px}
+.msg{display:none;margin-top:14px;padding:12px;border-radius:10px;text-align:center;font-weight:700}
+.success{display:block;background:#c6efce;color:#176b2d}.error{display:block;background:#ffc7ce;color:#9c0006}
+.count{text-align:center;color:#667085;font-size:13px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Service Entry</h1><p>Type the details and save directly into your existing Excel.</p></header>
+<main>
+<form id="form">
+<div class="field"><label>Inward Date</label><input id="inwardDate" type="date" required></div>
+<div class="field"><label>Outward Date</label><input id="outwardDate" type="date"></div>
+<div class="field"><label>Model No.</label><input id="modelNo" placeholder="Enter model number"></div>
+<div class="field"><label>Customer Details</label><textarea id="customerDetails" placeholder="Name, phone, address..."></textarea></div>
+<div class="field"><label>Complaints</label><textarea id="complaints" placeholder="Enter complaint"></textarea></div>
+<div class="field"><label>Status</label><div class="status">
+<button type="button" id="complete" class="complete">✓ Complete</button>
+<button type="button" id="pending" class="pending active">! Pending</button>
+</div></div>
+<div class="field"><label>Remarks</label><textarea id="remarks"></textarea></div>
+<div class="field"><label>Item Replaced</label><input id="itemReplaced" placeholder="Enter replaced item"></div>
+<div class="field"><label>Final Remark</label><textarea id="finalRemark"></textarea></div>
+<div class="field"><label>Service Charge</label><input id="serviceCharge" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+<div class="actions"><button class="save" type="submit">SAVE ENTRY</button>
+<button class="download" type="button" id="download">📊 DOWNLOAD LATEST EXCEL</button>
+<button class="clear" type="button" id="clear">🗑️ CLEAR ALL EXCEL DATA</button></div>
+<div id="msg" class="msg"></div><div id="count" class="count">Entries saved: 0</div>
+</form>
+</main></div>
+<script>
+const $=id=>document.getElementById(id);
+const localDate=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+$("inwardDate").value=localDate;let status="Pending";
+$("complete").onclick=()=>{status="Complete";$("complete").classList.add("active");$("pending").classList.remove("active")};
+$("pending").onclick=()=>{status="Pending";$("pending").classList.add("active");$("complete").classList.remove("active")};
+$("form").onsubmit=async e=>{
+ e.preventDefault();
+ const body={inwardDate:$("inwardDate").value,outwardDate:$("outwardDate").value,modelNo:$("modelNo").value,
+ customerDetails:$("customerDetails").value,complaints:$("complaints").value,status,remarks:$("remarks").value,
+ itemReplaced:$("itemReplaced").value,finalRemark:$("finalRemark").value,serviceCharge:$("serviceCharge").value};
+ try{let r=await fetch("/api/entries",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ let d=await r.json();if(!r.ok)throw Error(d.error||"Could not save");
+ show("Saved successfully — Sl. No. "+d.slno,false);
+ ["outwardDate","modelNo","customerDetails","complaints","remarks","itemReplaced","finalRemark","serviceCharge"].forEach(x=>$(x).value="");
+ status="Pending";$("pending").classList.add("active");$("complete").classList.remove("active");count();
+ }catch(err){show(err.message,true)}
+};
+$("download").onclick=()=>location.href="/api/download";
+$("clear").onclick=async()=>{
+ if(!confirm("WARNING: This will permanently clear ALL service entries from the Excel file. Continue?")) return;
+ try{
+   let r=await fetch("/api/clear",{method:"POST"});
+   let d=await r.json();
+   if(!r.ok) throw Error(d.error||"Could not clear Excel data");
+   show("All service data has been cleared from Excel.",false);
+   count();
+ }catch(err){show(err.message,true)}
+};
+function show(t,err){let m=$("msg");m.textContent=t;m.className="msg "+(err?"error":"success");setTimeout(()=>m.className="msg",3000)}
+async function count(){try{let r=await fetch("/api/count"),d=await r.json();$("count").textContent="Entries saved: "+d.count}catch{}}
+count();
+</script>
+</body>
+</html>
