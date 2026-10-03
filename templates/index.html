@@ -2,82 +2,167 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Service Entry</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#222;font-family:Arial,sans-serif}
-.app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
-header{background:#295294;color:#fff;padding:20px 18px;position:sticky;top:0;z-index:5}
-h1{margin:0;font-size:22px}header p{margin:5px 0 0;font-size:13px;opacity:.9}
-main{padding:18px}.field{margin-bottom:15px}label{display:block;font-size:14px;font-weight:700;margin-bottom:7px}
-input,textarea{width:100%;font:inherit;font-size:16px;padding:13px;border:1px solid #ccd5e2;border-radius:10px;background:#fff}
-textarea{min-height:80px;resize:vertical}.status{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.status button{padding:14px;border:2px solid #ddd;border-radius:10px;background:#fff;font-weight:700;font-size:15px}
-.complete.active{background:#c6efce;border-color:#2e9b4b;color:#176b2d}
-.pending.active{background:#ffc7ce;border-color:#d33b4a;color:#9c0006}
-.actions{display:grid;gap:10px;margin-top:20px}.save{border:0;border-radius:11px;background:#295294;color:#fff;padding:15px;font-size:17px;font-weight:700}
-.download{border:2px solid #295294;border-radius:11px;background:#fff;color:#295294;padding:14px;font-weight:700;font-size:15px}.clear{border:2px solid #d33b4a;border-radius:11px;background:#fff;color:#9c0006;padding:14px;font-weight:700;font-size:15px}
-.msg{display:none;margin-top:14px;padding:12px;border-radius:10px;text-align:center;font-weight:700}
-.success{display:block;background:#c6efce;color:#176b2d}.error{display:block;background:#ffc7ce;color:#9c0006}
-.count{text-align:center;color:#667085;font-size:13px;margin-top:14px}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#222;font-family:Arial,sans-serif}
+header{background:#295294;color:white;padding:18px 16px;text-align:center}
+header h1{margin:0;font-size:22px}
+header p{margin:5px 0 0;font-size:13px;opacity:.9}
+main{max-width:650px;margin:auto;padding:14px}
+.card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 12px #00000012;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:14px;margin:13px 0 6px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #ccd3df;border-radius:9px;font-size:16px;background:white}
+textarea{min-height:80px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:9px;padding:13px 15px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{width:100%;background:#295294;color:#fff;margin-top:16px}
+.secondary{background:#2494CC;color:white}
+.danger{background:#c62828;color:white}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.status-complete{color:#138a3d;font-weight:700}
+.status-pending{color:#c62828;font-weight:700}
+#msg{margin-top:12px;padding:10px;border-radius:8px;display:none}
+.ok{background:#e7f7ed;color:#13783a}
+.err{background:#fdeaea;color:#a51f1f}
+.count{font-size:14px;color:#555}
+@media(max-width:480px){.row{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="app">
-<header><h1>Service Entry</h1><p>Type the details and save directly into your existing Excel.</p></header>
+<header>
+  <h1>Service Entry</h1>
+  <p>Service / Complaint Tracker</p>
+</header>
 <main>
-<form id="form">
-<div class="field"><label>Inward Date</label><input id="inwardDate" type="date" required></div>
-<div class="field"><label>Outward Date</label><input id="outwardDate" type="date"></div>
-<div class="field"><label>Model No.</label><input id="modelNo" placeholder="Enter model number"></div>
-<div class="field"><label>Customer Details</label><textarea id="customerDetails" placeholder="Name, phone, address..."></textarea></div>
-<div class="field"><label>Complaints</label><textarea id="complaints" placeholder="Enter complaint"></textarea></div>
-<div class="field"><label>Status</label><div class="status">
-<button type="button" id="complete" class="complete">✓ Complete</button>
-<button type="button" id="pending" class="pending active">! Pending</button>
-</div></div>
-<div class="field"><label>Remarks</label><textarea id="remarks"></textarea></div>
-<div class="field"><label>Item Replaced</label><input id="itemReplaced" placeholder="Enter replaced item"></div>
-<div class="field"><label>Final Remark</label><textarea id="finalRemark"></textarea></div>
-<div class="field"><label>Service Charge</label><input id="serviceCharge" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
-<div class="actions"><button class="save" type="submit">SAVE ENTRY</button>
-<button class="download" type="button" id="download">📊 DOWNLOAD LATEST EXCEL</button>
-<button class="clear" type="button" id="clear">🗑️ CLEAR ALL EXCEL DATA</button></div>
-<div id="msg" class="msg"></div><div id="count" class="count">Entries saved: 0</div>
-</form>
-</main></div>
+<div class="card">
+  <div class="count">Total entries: <strong id="count">0</strong></div>
+
+  <form id="form">
+    <div class="row">
+      <div>
+        <label>Inward Date *</label>
+        <input id="inward_date" type="date" required>
+      </div>
+      <div>
+        <label>Outward Date</label>
+        <input id="outward_date" type="date">
+      </div>
+    </div>
+
+    <label>Model No. *</label>
+    <input id="model_no" placeholder="Enter model number" required>
+
+    <label>Customer Details *</label>
+    <input id="customer_details" placeholder="Name / phone / address" required>
+
+    <label>Complaints *</label>
+    <textarea id="complaints" placeholder="Customer complaint" required></textarea>
+
+    <label>Status *</label>
+    <select id="status" required>
+      <option value="Complete">Complete</option>
+      <option value="Pending">Pending</option>
+    </select>
+
+    <label>Remarks</label>
+    <textarea id="remarks" placeholder="Service remarks"></textarea>
+
+    <label>Item Replaced</label>
+    <input id="item_replaced" placeholder="Part / item replaced">
+
+    <label>Final Remark</label>
+    <textarea id="final_remark" placeholder="Final service remark"></textarea>
+
+    <label>Service Charge</label>
+    <input id="service_charge" type="number" step="0.01" min="0" placeholder="0">
+
+    <button class="primary" type="submit">Save Entry</button>
+    <div id="msg"></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="actions">
+    <button class="secondary" onclick="downloadExcel()">Download Latest Excel</button>
+    <button class="danger" onclick="clearAll()">Clear All Data</button>
+  </div>
+</div>
+</main>
+
 <script>
-const $=id=>document.getElementById(id);
-const localDate=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-$("inwardDate").value=localDate;let status="Pending";
-$("complete").onclick=()=>{status="Complete";$("complete").classList.add("active");$("pending").classList.remove("active")};
-$("pending").onclick=()=>{status="Pending";$("pending").classList.add("active");$("complete").classList.remove("active")};
-$("form").onsubmit=async e=>{
- e.preventDefault();
- const body={inwardDate:$("inwardDate").value,outwardDate:$("outwardDate").value,modelNo:$("modelNo").value,
- customerDetails:$("customerDetails").value,complaints:$("complaints").value,status,remarks:$("remarks").value,
- itemReplaced:$("itemReplaced").value,finalRemark:$("finalRemark").value,serviceCharge:$("serviceCharge").value};
- try{let r=await fetch("/api/entries",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
- let d=await r.json();if(!r.ok)throw Error(d.error||"Could not save");
- show("Saved successfully — Sl. No. "+d.slno,false);
- ["outwardDate","modelNo","customerDetails","complaints","remarks","itemReplaced","finalRemark","serviceCharge"].forEach(x=>$(x).value="");
- status="Pending";$("pending").classList.add("active");$("complete").classList.remove("active");count();
- }catch(err){show(err.message,true)}
-};
-$("download").onclick=()=>location.href="/api/download";
-$("clear").onclick=async()=>{
- if(!confirm("WARNING: This will permanently clear ALL service entries from the Excel file. Continue?")) return;
- try{
-   let r=await fetch("/api/clear",{method:"POST"});
-   let d=await r.json();
-   if(!r.ok) throw Error(d.error||"Could not clear Excel data");
-   show("All service data has been cleared from Excel.",false);
-   count();
- }catch(err){show(err.message,true)}
-};
-function show(t,err){let m=$("msg");m.textContent=t;m.className="msg "+(err?"error":"success");setTimeout(()=>m.className="msg",3000)}
-async function count(){try{let r=await fetch("/api/count"),d=await r.json();$("count").textContent="Entries saved: "+d.count}catch{}}
-count();
+const $ = id => document.getElementById(id);
+
+function today(){
+  const d=new Date();
+  return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
+$("inward_date").value=today();
+
+async function refreshCount(){
+  try{
+    const r=await fetch("/api/count");
+    const j=await r.json();
+    $("count").textContent=j.count ?? 0;
+  }catch(e){}
+}
+refreshCount();
+
+function message(text, ok=true){
+  const el=$("msg");
+  el.textContent=text;
+  el.className=ok?"ok":"err";
+  el.style.display="block";
+  setTimeout(()=>el.style.display="none",4000);
+}
+
+$("form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const payload={
+    inward_date:$("inward_date").value,
+    outward_date:$("outward_date").value,
+    model_no:$("model_no").value,
+    customer_details:$("customer_details").value,
+    complaints:$("complaints").value,
+    status:$("status").value,
+    remarks:$("remarks").value,
+    item_replaced:$("item_replaced").value,
+    final_remark:$("final_remark").value,
+    service_charge:$("service_charge").value
+  };
+
+  try{
+    const r=await fetch("/api/entries",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error || "Could not save entry");
+
+    message("Entry saved successfully.");
+    $("form").reset();
+    $("inward_date").value=today();
+    $("status").value="Complete";
+    refreshCount();
+  }catch(err){message(err.message,false)}
+});
+
+function downloadExcel(){
+  window.location.href="/api/download";
+}
+
+async function clearAll(){
+  if(!confirm("Delete ALL service entries? This cannot be undone.")) return;
+  try{
+    const r=await fetch("/api/clear",{method:"POST"});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.error || "Could not clear data");
+    message("All service data cleared.");
+    refreshCount();
+  }catch(err){message(err.message,false)}
+}
 </script>
 </body>
 </html>
